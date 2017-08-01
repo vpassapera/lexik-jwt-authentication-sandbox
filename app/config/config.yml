@@ -16,7 +16,7 @@ framework:
         resource: "%kernel.root_dir%/config/routing.yml"
         strict_requirements: ~
     form:            ~
-    csrf_protection: ~
+    csrf_protection: false
     validation:      { enable_annotations: true }
     #serializer:      { enable_annotations: true }
     templating:
@@ -35,7 +35,9 @@ framework:
 # Twig Configuration
 twig:
     debug:            "%kernel.debug%"
+    exception_controller: 'FOS\RestBundle\Controller\ExceptionController::showAction'
     strict_variables: "%kernel.debug%"
+    cache: "%kernel.cache_dir%/twig"
 
 # Doctrine Configuration
 doctrine:
@@ -59,3 +61,56 @@ lexik_jwt_authentication:
     private_key_path:   '%kernel.root_dir%/../var/jwt/private.pem'
     public_key_path:    '%kernel.root_dir%/../var/jwt/public.pem'
     pass_phrase:        foobar
+
+fos_rest:
+#    param_fetcher_listener: true
+    body_listener: true
+    format_listener:
+        rules:
+            - { path: ^/(js|css|images|vendor|bundles).+$, priorities: ['application/javascript', 'text/css', '*/*'], prefer_extension: false }
+            - { path: ^/(.+)[\.html]$, priorities: ['html'], fallback_format: html, prefer_extension: false }
+            - { path: ^/(.+)$, priorities: ['json'], fallback_format: json, prefer_extension: false }
+            - { path: ^/$, priorities: ['html'], fallback_format: html, prefer_extension: false }
+    view:
+        mime_types:
+            json:
+              - 'application/json'
+              - 'application/json;version=1.0'
+              - 'application/json;version=1.1'
+        view_response_listener: 'force'
+        formats:
+            xml:  false
+            json: true
+        templating_formats:
+            html: true
+    exception:
+        codes:
+            'Symfony\Component\Routing\Exception\ResourceNotFoundException': 404
+            'Doctrine\ORM\OptimisticLockException': HTTP_CONFLICT
+        messages:
+            'Symfony\Component\Routing\Exception\ResourceNotFoundException': true
+            'Symfony\Component\HttpKernel\Exception\BadRequestHttpException': true
+    allowed_methods_listener: true
+    access_denied_listener:
+        json: true
+    versioning:
+        enabled: true
+        resolvers:
+            query:
+                enabled: false
+            custom_header:
+                enabled: false
+            media_type:
+                enabled: true
+    routing_loader:
+        default_format: null
+        include_format: true
+
+jms_serializer:
+    visitors:
+        json:
+            options: [JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE]
+    handlers:
+        datetime:
+            default_format: "Y-m-d\\TH:i:sP"
+
