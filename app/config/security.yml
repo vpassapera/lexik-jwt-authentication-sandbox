@@ -18,7 +18,7 @@ security:
             stateless: true
             anonymous: true
             form_login:
-                check_path: /login_check
+                check_path: /login
                 require_previous_session: false
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
@@ -35,9 +35,9 @@ security:
             provider: entity_provider
             guard:
                 authenticators:
-                    - app.jwt_token_authenticator
+                    - lexik_jwt_authentication.security.guard.jwt_token_authenticator
 
     access_control:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api, roles: ROLE_USER }
